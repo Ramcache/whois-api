@@ -1,0 +1,218 @@
+basePath: /
+definitions:
+  models.ErrorResponse:
+    description: Ошибка выполнения запроса
+    properties:
+      code:
+        description: Код ошибки (HTTP status)
+        example: 400
+        type: integer
+      message:
+        description: Сообщение об ошибке
+        example: Некорректный ID
+        type: string
+    type: object
+  models.People:
+    description: Обогащённые данные о человеке
+    properties:
+      age:
+        description: Возраст (из внешнего API)
+        example: 30
+        type: integer
+      gender:
+        description: Пол (из внешнего API)
+        example: male
+        type: string
+      id:
+        description: Уникальный идентификатор
+        example: 1
+        type: integer
+      name:
+        description: Имя
+        example: Dmitriy
+        type: string
+      nationality:
+        description: Национальность (из внешнего API)
+        example: RU
+        type: string
+      patronymic:
+        description: Отчество (опционально)
+        example: Vasilevich
+        type: string
+      surname:
+        description: Фамилия
+        example: Ushakov
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: Сервис для обогащения данных о людях
+  title: People API
+  version: "1.0"
+paths:
+  /people:
+    get:
+      consumes:
+      - application/json
+      description: Получает список пользователей с фильтрацией и пагинацией
+      parameters:
+      - description: Фильтр по имени
+        in: query
+        name: name
+        type: string
+      - description: Фильтр по возрасту
+        in: query
+        name: age
+        type: integer
+      - description: Количество записей (по умолчанию 10)
+        in: query
+        name: limit
+        type: integer
+      - description: Смещение
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.People'
+            type: array
+        "500":
+          description: Ошибка при получении списка
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Получение списка пользователей
+      tags:
+      - people
+    post:
+      consumes:
+      - application/json
+      description: Принимает ФИО, обогащает данные и сохраняет в БД
+      parameters:
+      - description: Данные пользователя (ФИО)
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.People'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.People'
+        "400":
+          description: Некорректный JSON
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Ошибка при обработке запроса
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Создание пользователя
+      tags:
+      - people
+  /people/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Удаляет пользователя по ID
+      parameters:
+      - description: ID пользователя
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Пользователь успешно удалён
+        "400":
+          description: Неверный ID
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Пользователь не найден
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Ошибка при удалении
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Удаление пользователя
+      tags:
+      - people
+    get:
+      consumes:
+      - application/json
+      description: Возвращает одного пользователя по ID
+      parameters:
+      - description: ID пользователя
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.People'
+        "400":
+          description: Неверный ID
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Пользователь не найден
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Получение пользователя по ID
+      tags:
+      - people
+    put:
+      consumes:
+      - application/json
+      description: Обновляет данные пользователя по ID
+      parameters:
+      - description: ID пользователя
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Новые данные пользователя
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.People'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Успешное обновление
+        "400":
+          description: Неверный ID или JSON
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Пользователь не найден
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Ошибка при обновлении
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Обновление пользователя
+      tags:
+      - people
+schemes:
+- http
+swagger: "2.0"
